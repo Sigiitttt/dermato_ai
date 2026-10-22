@@ -1,0 +1,9 @@
+__pycache__/
+*.py[cod]
+*$py.class
+.ipynb_checkpoints/
+.virtual_documents/
+models/*.pt
+models/*.pth
+.env
+.vscode/

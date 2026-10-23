@@ -18,14 +18,14 @@ Aplikasi dilengkapi alur prapemrosesan medis standar (*Dull Razor hair removal*,
 
 ---
 
-## ⚡ Akses Cepat Notebook Riset Utama
+## ⚡ Akses Modul & Notebook Riset
 
-| No | Tahapan Riset | File Notebook | Deskripsi & Hasil Kunci |
+| Modul | Direktori | Berkas Utama | Deskripsi & Hasil Kunci |
 | :---: | :--- | :--- | :--- |
-| **1** | **Pembuatan Masker (U-Net)** | [`notebooks/00_train_unet_segmentasi_ham10k.ipynb`](notebooks/00_train_unet_segmentasi_ham10k.ipynb) | Pelatihan U-Net ResNet-34 pada data ground truth dokter HAM10k untuk menghasilkan masker otomatis (pseudo-mask) bagi 24.466 citra. |
-| **2A** | **Spark on YARN (8W12P)** | [`notebooks/8w12p.ipynb`](notebooks/8w12p.ipynb) | **Prapemrosesan Big Data Terdistribusi:** 8 Worker, 12 Partisi, HDFS Sharding, prapemrosesan **560,09 detik** (4,87x lebih cepat), pelatihan ConvNeXt-Tiny (**Akurasi 83,87%**, AUC 0,9360). |
-| **2B** | **Baseline Sekuensial (1 Core)** | [`notebooks/Irisan_convnext_tiny_tanpa_spark (1).ipynb`](notebooks/Irisan_convnext_tiny_tanpa_spark%20(1).ipynb) | **Baseline Acuan (Non-Spark):** Prapemrosesan citra satu per satu pada 1 core CPU (**2.727,86 detik** / 45,46 menit). |
-| **3** | **Aplikasi Web DermatoAI** | [`app.py`](app.py) | Kode aplikasi web interaktif Streamlit Cloud. [Akses Web App](https://dermatoai-4465465.streamlit.app/). |
+| **Segmentasi** | [`segmentasi/`](segmentasi/) | [`00_train_unet_segmentasi_ham10k.ipynb`](segmentasi/00_train_unet_segmentasi_ham10k.ipynb) | Pelatihan U-Net ResNet-34 pada data ground truth dokter HAM10k untuk menghasilkan masker otomatis (pseudo-mask) bagi 24.466 citra. |
+| **Spark on YARN** | [`spark_dan_baseline/`](spark_dan_baseline/) | [`8w12p.ipynb`](spark_dan_baseline/8w12p.ipynb) | **Prapemrosesan Big Data Terdistribusi:** 8 Worker, 12 Partisi, HDFS Sharding, prapemrosesan **560,09 detik** (4,87x lebih cepat), pelatihan ConvNeXt-Tiny (**Akurasi 83,87%**, AUC 0,9360). |
+| **Baseline Sekuensial** | [`spark_dan_baseline/`](spark_dan_baseline/) | [`Irisan_convnext_tiny_tanpa_spark (1).ipynb`](<spark_dan_baseline/Irisan_convnext_tiny_tanpa_spark (1).ipynb>) | **Baseline Acuan (Non-Spark):** Prapemrosesan citra satu per satu pada 1 core CPU (**2.727,86 detik** / 45,46 menit). |
+| **Aplikasi Web** | [`app/`](app/) | [`app/app.py`](app/app.py) | Implementasi aplikasi antarmuka web Streamlit Cloud beserta berkas dependensi dan sampel uji. [Akses Web App](https://dermatoai-4465465.streamlit.app/). |
 
 ---
 
@@ -77,18 +77,25 @@ Saat dijalankan di Streamlit Cloud, aplikasi otomatis mengunduh dan mengekstrak 
 
 ```text
 dermato_ai/
-├── app.py                                         # Aplikasi utama Streamlit Cloud
-├── requirements.txt                               # Dependensi pustaka Python
+├── app/                                           # Berkas aplikasi Streamlit
+│   ├── app.py                                     # Skrip antarmuka web Streamlit
+│   ├── requirements.txt                           # Dependensi modul web
+│   ├── samples/                                   # Contoh citra dermatoskopi paten
+│   │   ├── melanoma.jpg
+│   │   ├── nevus.jpg
+│   │   └── seborrheic_keratosis.jpg
+│   └── README.md                                  # Dokumentasi modul aplikasi
+├── segmentasi/                                    # Modul segmentasi U-Net
+│   ├── 00_train_unet_segmentasi_ham10k.ipynb      # Pembuatan masker segmentasi U-Net
+│   └── README.md                                  # Dokumentasi segmentasi
+├── spark_dan_baseline/                            # Eksperimen komputasi terdistribusi vs baseline
+│   ├── 8w12p.ipynb                                # Spark on YARN 8 Worker, 12 Partisi
+│   ├── Irisan_convnext_tiny_tanpa_spark (1).ipynb # Baseline sekuensial (1 core)
+│   └── README.md                                  # Dokumentasi komparasi kinerja
+├── app.py                                         # Entrypoint launcher (Streamlit Cloud root)
+├── requirements.txt                               # Dependensi root
 ├── demo_preview.png                               # Preview antarmuka DermatoAI
 ├── gambar_13_rekap_excel.png                      # Visual komparasi Spark vs Sekuensial
-├── samples/                                       # Contoh citra dermatoskopi paten
-│   ├── melanoma.jpg
-│   ├── nevus.jpg
-│   └── seborrheic_keratosis.jpg
-├── notebooks/                                     # Notebook eksperimen komputasi & modeling
-│   ├── 00_train_unet_segmentasi_ham10k.ipynb      # Pembuatan masker segmentasi U-Net
-│   ├── 8w12p.ipynb                                # Spark on YARN 8 Worker, 12 Partisi
-│   └── Irisan_convnext_tiny_tanpa_spark (1).ipynb # Baseline sekuensial (1 core) & training
 └── README.md                                      # Dokumentasi repositori
 ```
 

@@ -1,4 +1,4 @@
-![Uploading image.png…]()
+![Uploading Screenshot 2026-10-22 085459.png…]()
 
 # 🔬 DermatoAI — Sistem Deteksi Kanker Kulit Berbasis Deep Learning
 

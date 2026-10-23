@@ -6,6 +6,7 @@
 
 <p align="center">
   <a href="https://dermatoai-4465465.streamlit.app/"><img src="https://static.streamlit.io/badges/streamlit_badge_black_white.svg" alt="Streamlit App"></a>
+  <a href="https://drive.google.com/drive/folders/1jIbZJ7gk4rkda89PCBbnWrCk0afYSvrF?usp=drive_link"><img src="https://img.shields.io/badge/Google_Drive-Arsip_Riset_Resmi-orange?logo=googledrive" alt="Google Drive Archive"></a>
   <a href="https://github.com/Sigiitttt/dermato_ai/releases/tag/v1.0"><img src="https://img.shields.io/badge/Model_Weights-GitHub_Releases_v1.0-blue?logo=github" alt="Model Weights"></a>
   <img src="https://img.shields.io/badge/Akurasi_Uji-83.87%25-success" alt="Akurasi Model">
   <img src="https://img.shields.io/badge/Speedup_Spark-4.87x_Lebih_Cepat-brightgreen" alt="Percepatan Spark">

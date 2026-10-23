@@ -1,6 +1,8 @@
-![Uploading Screenshot 2026-10-22 085459.png…]()
-
 # 🔬 DermatoAI — Sistem Deteksi Kanker Kulit Berbasis Deep Learning
+
+<p align="center">
+  <img src="demo_preview.png" alt="Tampilan Antarmuka DermatoAI" width="100%" style="border-radius: 12px; box-shadow: 0 8px 30px rgba(0,0,0,0.5);" />
+</p>
 
 DermatoAI adalah sistem aplikasi diagnosis citra dermoskopi berbasis Deep Learning dengan arsitektur **ConvNeXt-Tiny** dan segmentasi otomatis **U-Net (ResNet-34)**. Sistem ini membedakan 3 kelas lesi kulit (Melanoma, Nevus, dan Seborrheic Keratosis) dengan akurasi uji **83,87%**, Macro F1-Score **0,7867**, dan AUC **0,9360**.
 
@@ -32,6 +34,7 @@ Aplikasi ini dilengkapi alur prapemrosesan medis standar (*Dull Razor*, *ROI Cro
 dermato_ai/
 ├── app.py                     # Aplikasi utama Streamlit (siap deploy)
 ├── requirements.txt           # Dependensi pustaka Python
+├── demo_preview.png           # Tangkapan layar antarmuka DermatoAI
 ├── samples/                   # Contoh citra dermatoskopi demo paten
 │   ├── melanoma.jpg
 │   ├── nevus.jpg

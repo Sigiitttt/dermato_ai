@@ -403,6 +403,8 @@ def to_tensor(img_224):
 
 
 def infer_image(model, img_224):
+    if hasattr(model, "stages"):
+        model.stages[-1]._forward_hooks.clear()
     with torch.no_grad():
         return torch.softmax(model(to_tensor(img_224)), dim=1).cpu().numpy()[0]
 
@@ -410,26 +412,39 @@ def infer_image(model, img_224):
 def grad_cam(model, img_224, class_idx):
     feats, grads = {}, {}
     layer = model.stages[-1]
+    layer._forward_hooks.clear()
 
     def fwd(_, __, out):
-        feats["a"] = out
-        out.register_hook(lambda g: grads.__setitem__("a", g))
+        feats["a"] = out.detach()
+        if out.requires_grad:
+            out.register_hook(lambda g: grads.__setitem__("a", g))
 
     handle = layer.register_forward_hook(fwd)
     try:
+        inp = to_tensor(img_224).requires_grad_(True)
         with torch.enable_grad():
             model.zero_grad()
-            logits = model(to_tensor(img_224))
+            logits = model(inp)
             logits[0, class_idx].backward()
-    finally:
-        handle.remove()
 
-    weights = grads["a"].mean(dim=(2, 3), keepdim=True)
-    cam = torch.relu((weights * feats["a"]).sum(dim=1))[0].detach().cpu().numpy()
-    cam = cv2.resize(cam, (img_224.shape[1], img_224.shape[0]))
-    cam = (cam - cam.min()) / (cam.max() - cam.min() + 1e-8)
-    heat = cv2.cvtColor(cv2.applyColorMap((cam * 255).astype(np.uint8), cv2.COLORMAP_JET), cv2.COLOR_BGR2RGB)
-    return cv2.addWeighted(img_224, 0.55, heat, 0.45, 0)
+        if "a" not in grads or "a" not in feats:
+            return img_224
+
+        weights = grads["a"].mean(dim=(2, 3), keepdim=True)
+        cam = torch.relu((weights * feats["a"]).sum(dim=1))[0].detach().cpu().numpy()
+        cam = cv2.resize(cam, (img_224.shape[1], img_224.shape[0]))
+        denom = cam.max() - cam.min()
+        cam = (cam - cam.min()) / (denom if denom > 1e-8 else 1.0)
+        heat = cv2.cvtColor(cv2.applyColorMap((cam * 255).astype(np.uint8), cv2.COLORMAP_JET), cv2.COLOR_BGR2RGB)
+        return cv2.addWeighted(img_224, 0.55, heat, 0.45, 0)
+    except Exception:
+        return img_224
+    finally:
+        try:
+            handle.remove()
+        except Exception:
+            pass
+        layer._forward_hooks.clear()
 
 
 def to_b64(img, max_w=520):

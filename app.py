@@ -208,6 +208,7 @@ DEFAULT_MODEL_PATH = REPO_ROOT / "models" / "best_convnext_tiny_irisan_8W12P_r1.
 DEFAULT_MASK_PATH = REPO_ROOT / "models" / "best_mask.pth"
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 MODEL_ACC = "83.87%"
+MODELS_RELEASE_URL = "https://github.com/Sigiitttt/dermato_ai/releases/download/v1.0/models.zip"
 
 CLASS_NAMES = ["melanoma", "nevus", "seborrheic_keratosis"]
 CLASS_LABELS = {
@@ -295,11 +296,54 @@ def pad_and_resize(img, target_size=224):
     return cv2.resize(padded, (target_size, target_size), interpolation=cv2.INTER_AREA)
 
 
+def ensure_models_downloaded():
+    models_dir = REPO_ROOT / "models"
+    models_dir.mkdir(parents=True, exist_ok=True)
+    m_convnext = models_dir / "best_convnext_tiny_irisan_8W12P_r1.pt"
+    m_mask = models_dir / "best_mask.pth"
+
+    if not m_convnext.exists() or not m_mask.exists():
+        placeholder = st.empty()
+        with placeholder.container():
+            st.info("Mengunduh bobot model resmi dari GitHub Release (v1.0)... Mohon tunggu sebentar.")
+            pbar = st.progress(0.0)
+            zip_path = models_dir / "models.zip"
+            try:
+                import urllib.request
+                import zipfile
+
+                req = urllib.request.Request(MODELS_RELEASE_URL, headers={"User-Agent": "Mozilla/5.0"})
+                with urllib.request.urlopen(req) as resp, open(zip_path, "wb") as out_file:
+                    total_sz = int(resp.headers.get("Content-Length", 194463692))
+                    downloaded = 0
+                    chunk_sz = 1024 * 512
+                    while True:
+                        chunk = resp.read(chunk_sz)
+                        if not chunk:
+                            break
+                        out_file.write(chunk)
+                        downloaded += len(chunk)
+                        pbar.progress(min(1.0, downloaded / total_sz))
+
+                with zipfile.ZipFile(zip_path, "r") as z:
+                    z.extractall(models_dir)
+
+                if zip_path.exists():
+                    zip_path.unlink()
+                placeholder.success("Bobot model resmi berhasil diunduh dan siap digunakan!")
+                time.sleep(1)
+                placeholder.empty()
+            except Exception as exc:
+                placeholder.error(f"Gagal mengunduh bobot model: {exc}")
+
+
 @st.cache_resource
 def load_unet_model(ckpt_path=None):
-    if ckpt_path is None:
-        ckpt_path = DEFAULT_MASK_PATH
-    if not os.path.exists(ckpt_path):
+    ensure_models_downloaded()
+    target = Path(ckpt_path) if ckpt_path else DEFAULT_MASK_PATH
+    if not target.exists():
+        target = DEFAULT_MASK_PATH
+    if not target.exists():
         return None
     try:
         import segmentation_models_pytorch as smp
@@ -310,7 +354,7 @@ def load_unet_model(ckpt_path=None):
             classes=1,
             activation=None,
         )
-        model.load_state_dict(torch.load(ckpt_path, map_location=DEVICE))
+        model.load_state_dict(torch.load(target, map_location=DEVICE))
         model.to(DEVICE)
         model.eval()
         return model
@@ -336,9 +380,16 @@ def predict_unet_mask(model, img_rgb):
 
 @st.cache_resource
 def load_convnext_model(ckpt_path):
+    ensure_models_downloaded()
+    target = Path(ckpt_path) if ckpt_path else DEFAULT_MODEL_PATH
+    if not target.exists():
+        target = DEFAULT_MODEL_PATH
+
     model = timm.create_model("convnext_tiny", pretrained=False, num_classes=3)
-    if os.path.exists(ckpt_path):
-        model.load_state_dict(torch.load(ckpt_path, map_location=DEVICE))
+    if target.exists():
+        model.load_state_dict(torch.load(target, map_location=DEVICE))
+    else:
+        st.error(f"Berkas bobot model tidak ditemukan: {target}")
     model.to(DEVICE)
     model.eval()
     return model
